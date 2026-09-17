@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { UserCircle, Info, CheckCircle2, Lock, ArrowRight, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../stores/authStore';
 import StarRating from '../components/common/StarRating';
 import { ScoreDisplay, DataBadge, ScoreBar } from '../components/common/ScoreDisplay';
@@ -8,9 +9,10 @@ import { MLA_WORK_CATEGORIES, ROUTES, VOTING_CONFIG, COMMENT_CONFIG } from '../c
 import { getConstituencyById } from '../data/constituencies';
 import { getDistrictById } from '../data/districts';
 import { getMLAByConstituency } from '../data/mlas';
-import { submitMLARating, hasRatedMLA, getMLADetail, getMLAComments } from '../services/mlaWorkService';
+import { submitMLARating, hasRatedMLA, getMLADetail } from '../services/mlaWorkService';
 
 export default function MLARatingPage() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [categoryScores, setCategoryScores] = useState({});
   const [comment, setComment] = useState('');
@@ -44,7 +46,7 @@ export default function MLARatingPage() {
     if (missing.length > 0) {
       setSubmitStatus({
         loading: false,
-        error: `Please rate all categories. Missing: ${missing.map(m => m.label).join(', ')}`,
+        error: `Please rate all categories.`,
         success: '',
       });
       return;
@@ -71,9 +73,9 @@ export default function MLARatingPage() {
               <UserCircle size={24} />
             </div>
             <div>
-              <h1 style={{ fontSize: '2rem', marginBottom: '2px' }}>Rate Your MLA</h1>
+              <h1 style={{ fontSize: '2rem', marginBottom: '2px' }}>{t('mla.title')}</h1>
               <p className="subtitle" style={{ fontSize: '1rem', margin: 0 }}>
-                Assess the work of your constituency representative.
+                {t('mla.subtitle')}
               </p>
             </div>
           </div>
@@ -88,30 +90,28 @@ export default function MLARatingPage() {
         <div className="alert alert-info" style={{ marginBottom: 'var(--space-6)' }}>
           <Info size={16} />
           <div>
-            <strong>Important:</strong> You can only rate the MLA representing <strong>your registered constituency</strong>. 
-            This section evaluates <strong>MLA work</strong> — 
-            for civic sense of the community, visit{' '}
-            <Link to={ROUTES.CIVIC_SENSE} style={{ color: 'var(--civic-primary-light)', fontWeight: 500, textDecoration: 'underline' }}>Civic Sense</Link>.
+            {t('mla.info_alert')}{' '}
+            <Link to={ROUTES.CIVIC_SENSE} style={{ color: 'var(--civic-primary-light)', fontWeight: 500, textDecoration: 'underline' }}>{t('mla.civic_link')}</Link>.
           </div>
         </div>
 
         {!isAuthenticated ? (
           <div className="card" style={{ textAlign: 'center', padding: 'var(--space-12)', borderStyle: 'dashed' }}>
             <Lock size={32} style={{ color: 'var(--border-strong)', margin: '0 auto var(--space-4)' }} />
-            <h3 style={{ marginBottom: 'var(--space-3)' }}>Sign In Required</h3>
+            <h3 style={{ marginBottom: 'var(--space-3)' }}>{t('civic.signin_req')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)' }}>
               You need to be signed in and have a registered constituency to rate your MLA.
             </p>
-            <Link to={ROUTES.AUTH} className="btn btn-mla btn-lg">Sign In</Link>
+            <Link to={ROUTES.AUTH} className="btn btn-mla btn-lg">{t('civic.signin_btn')}</Link>
           </div>
         ) : !userConstituency ? (
           <div className="card" style={{ textAlign: 'center', padding: 'var(--space-12)', borderStyle: 'dashed' }}>
             <MapPin size={32} style={{ color: 'var(--border-strong)', margin: '0 auto var(--space-4)' }} />
-            <h3 style={{ marginBottom: 'var(--space-3)' }}>Complete Your Profile</h3>
+            <h3 style={{ marginBottom: 'var(--space-3)' }}>{t('mla.profile_req')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-6)' }}>
-              Please set your constituency in your profile to rate your MLA.
+              {t('mla.profile_desc')}
             </p>
-            <Link to={ROUTES.PROFILE_SETUP} className="btn btn-mla btn-lg">Complete Profile</Link>
+            <Link to={ROUTES.PROFILE_SETUP} className="btn btn-mla btn-lg">{t('mla.profile_btn')}</Link>
           </div>
         ) : (
           <>
@@ -131,16 +131,16 @@ export default function MLARatingPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>
-                    YOUR MLA
+                    {t('mla.your_mla')}
                   </p>
                   <h2 style={{ color: 'var(--text-primary)', marginBottom: '4px', fontSize: '1.5rem' }}>
-                    {userMLA?.name || 'Not Assigned'}
+                    {userMLA?.name || t('dashboard.not_assigned')}
                   </h2>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>
-                    {userConstituency.name} Assembly Constituency
+                    {userConstituency.name} {t('profile.constituency_label')}
                   </p>
                   <p style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>
-                    {userDistrict?.name} District
+                    {userDistrict?.name} {t('profile.district_label')}
                   </p>
                 </div>
                 {userMLA?.isDemo && (
@@ -153,11 +153,11 @@ export default function MLARatingPage() {
                   <div style={{ display: 'flex', gap: 'var(--space-8)' }}>
                     <div style={{ minWidth: '150px' }}>
                       <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>
-                        CURRENT RATING
+                        {t('mla.current_rating')}
                       </p>
                       <ScoreDisplay score={mlaDetail.overallScore} size="xl" type="mla" />
                       <p style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
-                        Based on {mlaDetail.totalRatings.toLocaleString()} ratings
+                        {t('dashboard.ratings_count', { count: mlaDetail.totalRatings.toLocaleString() })}
                       </p>
                     </div>
 
@@ -180,13 +180,13 @@ export default function MLARatingPage() {
             <div className="card animate-fadeIn" style={{ animationDelay: '100ms' }}>
               <h3 style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <UserCircle size={20} className="text-mla" />
-                Rate MLA Work
+                {t('mla.rate_work')}
               </h3>
 
               {rated && !submitStatus.success ? (
                 <div className="alert alert-info">
                   <Info size={16} />
-                  You have already rated your MLA during the current period.
+                  {t('mla.already_rated')}
                 </div>
               ) : submitStatus.success ? (
                 <div className="alert alert-success">
@@ -225,17 +225,14 @@ export default function MLARatingPage() {
 
                   {/* Comment section */}
                   <div style={{ marginTop: 'var(--space-6)' }}>
-                    <label className="form-label">Optional Comment</label>
+                    <label className="form-label">{t('mla.optional_comment')}</label>
                     <textarea
                       className="form-textarea"
-                      placeholder="Share your thoughts on your MLA's work..."
+                      placeholder={t('mla.comment_placeholder')}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       maxLength={COMMENT_CONFIG.MAX_LENGTH}
                     />
-                    <p className="form-hint">
-                      {comment.length}/{COMMENT_CONFIG.MAX_LENGTH} characters. Comments are moderated.
-                    </p>
                   </div>
 
                   <button
@@ -244,7 +241,7 @@ export default function MLARatingPage() {
                     disabled={submitStatus.loading}
                     style={{ marginTop: 'var(--space-6)' }}
                   >
-                    {submitStatus.loading ? 'Submitting...' : 'Submit MLA Rating'}
+                    {submitStatus.loading ? t('civic.submitting') : t('mla.submit')}
                   </button>
                 </>
               )}
@@ -252,7 +249,7 @@ export default function MLARatingPage() {
 
             <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
               <Link to={ROUTES.MLA_RANKINGS} className="btn btn-primary btn-full">
-                View All MLA Rankings <ArrowRight size={16} />
+                {t('mla.view_rankings')} <ArrowRight size={16} />
               </Link>
             </div>
           </>

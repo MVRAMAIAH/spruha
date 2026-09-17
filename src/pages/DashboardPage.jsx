@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, AlertCircle, Home, UserCircle, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../stores/authStore';
 import { ScoreDisplay, DataBadge, ScoreBar } from '../components/common/ScoreDisplay';
 import { getConstituencyById } from '../data/constituencies';
@@ -11,6 +12,7 @@ import { getMLADetail, getUserMLARating } from '../services/mlaWorkService';
 import { ROUTES, CIVIC_SENSE_CATEGORIES, MLA_WORK_CATEGORIES } from '../config/constants';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [civicDetail, setCivicDetail] = useState(null);
   const [mlaDetail, setMlaDetail] = useState(null);
@@ -36,9 +38,9 @@ export default function DashboardPage() {
     <div className="page-content">
       <div className="container">
         <div className="page-header animate-fadeIn">
-          <h1>Citizen Dashboard</h1>
+          <h1>{t('dashboard.title')}</h1>
           <p className="subtitle">
-            Welcome back, {user?.username}. Here's your civic activity overview.
+            {t('dashboard.subtitle', { name: user?.username })}
           </p>
         </div>
 
@@ -46,63 +48,63 @@ export default function DashboardPage() {
           {/* ──── My Profile ──── */}
           <div className="card animate-fadeIn">
             <div className="card-header">
-              <h3 className="card-title">My Profile</h3>
-              <Link to={ROUTES.PROFILE_SETUP} className="btn btn-ghost btn-sm">Edit</Link>
+              <h3 className="card-title">{t('dashboard.my_profile')}</h3>
+              <Link to={ROUTES.PROFILE_SETUP} className="btn btn-ghost btn-sm">{t('dashboard.edit')}</Link>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              <ProfileRow label="Username" value={user?.username} />
+              <ProfileRow label={t('dashboard.username')} value={user?.username} />
               <ProfileRow 
-                label="Email" 
+                label={t('dashboard.email')} 
                 value={user?.email} 
-                badge={user?.emailVerified ? 'Verified' : 'Unverified'} 
+                badge={user?.emailVerified ? t('dashboard.verified') : t('dashboard.unverified')} 
                 isVerified={user?.emailVerified}
               />
-              <ProfileRow label="Mobile" value={user?.mobile || '—'} />
-              <ProfileRow label="State" value="Andhra Pradesh" />
-              <ProfileRow label="District" value={district?.name || '—'} />
-              <ProfileRow label="Constituency" value={constituency?.name || '—'} />
+              <ProfileRow label={t('dashboard.mobile')} value={user?.mobile || '—'} />
+              <ProfileRow label={t('dashboard.state')} value="Andhra Pradesh" />
+              <ProfileRow label={t('dashboard.district')} value={district?.name || '—'} />
+              <ProfileRow label={t('dashboard.constituency')} value={constituency?.name || '—'} />
             </div>
           </div>
 
           {/* ──── My Civic Activity ──── */}
           <div className="card animate-fadeIn" style={{ animationDelay: '100ms' }}>
-            <h3 className="card-title" style={{ marginBottom: 'var(--space-5)' }}>My Civic Activity</h3>
+            <h3 className="card-title" style={{ marginBottom: 'var(--space-5)' }}>{t('dashboard.my_activity')}</h3>
             <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: 'var(--space-4)' }}>
               <div className="stat-card">
                 <div className="stat-value" style={{ color: 'var(--civic-primary)' }}>
                   {userCivicRatings.length}
                 </div>
-                <div className="stat-label">Civic Ratings</div>
+                <div className="stat-label">{t('dashboard.stat_ratings')}</div>
               </div>
               <div className="stat-card">
                 <div className="stat-value" style={{ color: 'var(--civic-primary)' }}>
                   {new Set(userCivicRatings.map(r => r.constituencyId)).size}
                 </div>
-                <div className="stat-label">Areas Evaluated</div>
+                <div className="stat-label">{t('dashboard.stat_areas')}</div>
               </div>
               <div className="stat-card">
                 <div className="stat-value" style={{ color: 'var(--mla-primary)' }}>
-                  {userMLARating ? 'Yes' : 'No'}
+                  {userMLARating ? t('dashboard.yes') : t('dashboard.no')}
                 </div>
-                <div className="stat-label">MLA Rated</div>
+                <div className="stat-label">{t('dashboard.stat_mla')}</div>
               </div>
               <div className="stat-card">
                 <div className="stat-value" style={{ color: 'var(--text-primary)' }}>
-                  {userCivicRatings.filter(r => r.isOwnConstituency).length > 0 ? 'Yes' : 'No'}
+                  {userCivicRatings.filter(r => r.isOwnConstituency).length > 0 ? t('dashboard.yes') : t('dashboard.no')}
                 </div>
-                <div className="stat-label">Own Area Rated</div>
+                <div className="stat-label">{t('dashboard.stat_own')}</div>
               </div>
             </div>
 
             {/* Recent Activity */}
             <h4 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-              Recent Activity
+              {t('dashboard.recent_activity')}
             </h4>
             {userCivicRatings.length === 0 && !userMLARating ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                No activity yet. Start by{' '}
-                <Link to={ROUTES.CIVIC_SENSE} style={{ color: 'var(--civic-primary)' }}>rating civic sense</Link> or{' '}
-                <Link to={ROUTES.MLA_RATING} style={{ color: 'var(--mla-primary)' }}>rating your MLA</Link>.
+                {t('dashboard.no_activity')}{' '}
+                <Link to={ROUTES.CIVIC_SENSE} style={{ color: 'var(--civic-primary)' }}>{t('dashboard.rate_civic_link')}</Link> or{' '}
+                <Link to={ROUTES.MLA_RATING} style={{ color: 'var(--mla-primary)' }}>{t('dashboard.rate_mla_link')}</Link>.
               </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -118,7 +120,7 @@ export default function DashboardPage() {
                       display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
                     }}>
                       <Activity size={14} style={{ color: 'var(--civic-primary)' }} />
-                      <span>Rated civic sense of <strong>{c?.name || 'Unknown'}</strong> — {r.overallScore.toFixed(1)}/5</span>
+                      <span>{t('dashboard.rated_civic')} <strong>{c?.name || 'Unknown'}</strong> — {r.overallScore.toFixed(1)}/5</span>
                     </div>
                   );
                 })}
@@ -132,7 +134,7 @@ export default function DashboardPage() {
                     display: 'flex', alignItems: 'center', gap: 'var(--space-2)'
                   }}>
                     <UserCircle size={14} style={{ color: 'var(--mla-primary)' }} />
-                    <span>Rated MLA work — {userMLARating.overallScore.toFixed(1)}/5</span>
+                    <span>{t('dashboard.rated_mla')} — {userMLARating.overallScore.toFixed(1)}/5</span>
                   </div>
                 )}
               </div>
@@ -144,21 +146,21 @@ export default function DashboardPage() {
         {constituency && (
           <div style={{ marginTop: 'var(--space-10)' }}>
             <div className="section-header">
-              <h2><Home size={20} /> My Constituency</h2>
+              <h2><Home size={20} /> {t('dashboard.my_constituency')}</h2>
               <DataBadge category="demo" />
             </div>
 
             <div className="card animate-fadeIn">
               <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
                 <h2 style={{ marginBottom: 'var(--space-1)' }}>{constituency.name}</h2>
-                <p style={{ color: 'var(--text-tertiary)' }}>{district?.name} District</p>
+                <p style={{ color: 'var(--text-tertiary)' }}>{district?.name} {t('profile.district_label')}</p>
               </div>
 
               <div className="grid-2" style={{ gap: 'var(--space-8)' }}>
                 {/* Civic Sense Section */}
                 <div style={{ paddingRight: 'var(--space-4)' }}>
                   <h3 style={{ color: 'var(--civic-primary)', marginBottom: 'var(--space-4)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Activity size={16} /> Civic Sense
+                    <Activity size={16} /> {t('nav.civic_sense')}
                   </h3>
                   {civicDetail ? (
                     <div>
@@ -167,13 +169,13 @@ export default function DashboardPage() {
                           <div className="stat-value" style={{ color: 'var(--civic-primary)', fontSize: '1.25rem' }}>
                             {civicDetail.insideScore?.toFixed(1) || '—'}
                           </div>
-                          <div className="stat-label">Local Rating</div>
+                          <div className="stat-label">{t('dashboard.local_rating')}</div>
                         </div>
                         <div className="stat-card" style={{ background: 'var(--bg-elevated)' }}>
                           <div className="stat-value" style={{ color: 'var(--civic-primary-light)', fontSize: '1.25rem' }}>
                             {civicDetail.outsideScore?.toFixed(1) || '—'}
                           </div>
-                          <div className="stat-label">Outside Rating</div>
+                          <div className="stat-label">{t('dashboard.outside_rating')}</div>
                         </div>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -183,14 +185,14 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   ) : (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading...</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('dashboard.loading')}</p>
                   )}
                 </div>
 
                 {/* MLA Work Section — CLEARLY SEPARATED */}
                 <div style={{ borderLeft: '1px solid var(--border-subtle)', paddingLeft: 'var(--space-8)' }}>
                   <h3 style={{ color: 'var(--mla-primary)', marginBottom: 'var(--space-4)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <UserCircle size={16} /> Current MLA
+                    <UserCircle size={16} /> {t('dashboard.current_mla')}
                   </h3>
                   <div style={{
                     padding: 'var(--space-4)',
@@ -200,18 +202,18 @@ export default function DashboardPage() {
                     marginBottom: 'var(--space-4)',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}>
-                    <span style={{ fontWeight: 600, color: 'var(--mla-primary-light)' }}>{mla?.name || 'Not Assigned'}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--mla-primary-light)' }}>{mla?.name || t('dashboard.not_assigned')}</span>
                     {mla?.isDemo && <DataBadge category="demo" />}
                   </div>
                   {mlaDetail ? (
                     <div>
                       <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 'var(--space-1)' }}>
-                          MLA WORK RATING
+                          {t('dashboard.mla_rating')}
                         </p>
                         <ScoreDisplay score={mlaDetail.overallScore} type="mla" size="lg" />
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 'var(--space-1)' }}>
-                          {mlaDetail.totalRatings.toLocaleString()} ratings
+                          {t('dashboard.ratings_count', { count: mlaDetail.totalRatings.toLocaleString() })}
                         </p>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -221,13 +223,13 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   ) : (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading...</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('dashboard.loading')}</p>
                   )}
                 </div>
               </div>
 
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'var(--space-8)', borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-4)' }}>
-                Civic Sense and MLA Work ratings are completely independent measurements.
+                {t('dashboard.independent_note')}
               </p>
             </div>
           </div>
