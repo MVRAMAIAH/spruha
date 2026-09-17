@@ -80,7 +80,6 @@ export default function MLARatingPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <DataBadge category="demo" />
             <span style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem', display: 'flex', alignItems: 'center' }}>
               Period: {VOTING_CONFIG.CURRENT_VOTING_PERIOD}
             </span>

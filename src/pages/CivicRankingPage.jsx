@@ -49,7 +49,6 @@ export default function CivicRankingPage() {
             All 175 Andhra Pradesh Assembly Constituencies ranked by citizen-submitted civic sense ratings.
           </p>
           <div className="header-badges">
-            <DataBadge category="demo" />
             <DataBadge category="calculated" />
             <span style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
               Period: {VOTING_CONFIG.CURRENT_VOTING_PERIOD}

@@ -147,7 +147,6 @@ export default function DashboardPage() {
           <div style={{ marginTop: 'var(--space-10)' }}>
             <div className="section-header">
               <h2><Home size={20} /> {t('dashboard.my_constituency')}</h2>
-              <DataBadge category="demo" />
             </div>
 
             <div className="card animate-fadeIn">

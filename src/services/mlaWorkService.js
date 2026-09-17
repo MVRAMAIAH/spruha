@@ -11,7 +11,6 @@
  * from their profile and enforces this restriction.
  */
 
-import { DEMO_MLA_SCORES, DEMO_COMMENTS } from '../data/demoData';
 import { getMLAByConstituency } from '../data/mlas';
 import { MLA_WORK_CATEGORIES, VOTING_CONFIG, COMMENT_CONFIG } from '../config/constants';
 
@@ -33,9 +32,9 @@ const saveRatings = (ratings) => {
 const getComments = () => {
   try {
     const stored = JSON.parse(localStorage.getItem(MLA_COMMENTS_KEY));
-    return stored || [...DEMO_COMMENTS];
+    return stored || [];
   } catch {
-    return [...DEMO_COMMENTS];
+    return [];
   }
 };
 
@@ -138,18 +137,15 @@ export const submitMLARating = async (userId, userConstituencyId, categoryScores
   return rating;
 };
 
+const MIN_RATINGS_FOR_RANKING = 1;
+
 /**
  * Get aggregated MLA work scores for all MLAs
+ * Returns only those that meet the minimum ratings threshold.
  */
 export const getMLARankings = async () => {
   const userRatings = getRatings();
-  const demoScores = [...DEMO_MLA_SCORES];
-
-  const scoreMap = {};
-  demoScores.forEach(score => {
-    scoreMap[score.mlaId] = { ...score };
-  });
-
+  
   // Group user ratings by MLA
   const userRatingsByMLA = {};
   userRatings.forEach(r => {
@@ -159,28 +155,70 @@ export const getMLARankings = async () => {
     userRatingsByMLA[r.mlaId].push(r);
   });
 
-  // Update scores with user ratings
+  const rankings = [];
   Object.keys(userRatingsByMLA).forEach(mlaId => {
     const ratings = userRatingsByMLA[mlaId];
-    if (scoreMap[mlaId]) {
-      scoreMap[mlaId].totalRatings += ratings.length;
-      const demoWeight = scoreMap[mlaId].totalRatings - ratings.length;
-      const userAvg = ratings.reduce((a, r) => a + r.overallScore, 0) / ratings.length;
-      scoreMap[mlaId].overallScore = parseFloat(
-        ((scoreMap[mlaId].overallScore * demoWeight + userAvg * ratings.length) / scoreMap[mlaId].totalRatings).toFixed(2)
+    if (ratings.length >= MIN_RATINGS_FOR_RANKING) {
+      // Calculate overall average
+      const overallScore = parseFloat(
+        (ratings.reduce((a, r) => a + r.overallScore, 0) / ratings.length).toFixed(2)
       );
+      
+      // Calculate category averages
+      const categoryScores = {};
+      MLA_WORK_CATEGORIES.forEach(cat => {
+         const sum = ratings.reduce((a, r) => a + (r.categoryScores[cat.id] || 0), 0);
+         categoryScores[cat.id] = parseFloat((sum / ratings.length).toFixed(1));
+      });
+
+      rankings.push({
+        mlaId,
+        overallScore,
+        categoryScores,
+        totalRatings: ratings.length,
+        isDemo: false
+      });
     }
   });
 
-  return Object.values(scoreMap).sort((a, b) => b.overallScore - a.overallScore);
+  return rankings.sort((a, b) => b.overallScore - a.overallScore);
 };
 
 /**
  * Get MLA work detail for a specific MLA
+ * Returns exact user data even if it doesn't meet the ranking threshold.
  */
 export const getMLADetail = async (mlaId) => {
-  const rankings = await getMLARankings();
-  return rankings.find(r => r.mlaId === mlaId) || null;
+  const userRatings = getRatings();
+  const ratings = userRatings.filter(r => r.mlaId === mlaId);
+  
+  if (ratings.length === 0) {
+    return {
+      mlaId,
+      overallScore: 0,
+      categoryScores: {},
+      totalRatings: 0,
+      isDemo: false
+    };
+  }
+
+  const overallScore = parseFloat(
+    (ratings.reduce((a, r) => a + r.overallScore, 0) / ratings.length).toFixed(2)
+  );
+
+  const categoryScores = {};
+  MLA_WORK_CATEGORIES.forEach(cat => {
+     const sum = ratings.reduce((a, r) => a + (r.categoryScores[cat.id] || 0), 0);
+     categoryScores[cat.id] = parseFloat((sum / ratings.length).toFixed(1));
+  });
+
+  return {
+    mlaId,
+    overallScore,
+    categoryScores,
+    totalRatings: ratings.length,
+    isDemo: false
+  };
 };
 
 /**

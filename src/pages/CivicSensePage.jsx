@@ -122,7 +122,6 @@ export default function CivicSensePage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <DataBadge category="demo" />
           </div>
         </div>
 

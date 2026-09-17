@@ -54,8 +54,7 @@ export default function MLARankingPage() {
           <p className="subtitle">
             Aggregated citizen-submitted assessments of MLA work across Andhra Pradesh constituencies.
           </p>
-          <div className="header-badges">
-            <DataBadge category="demo" />
+          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
             <DataBadge category="calculated" />
           </div>
         </div>
